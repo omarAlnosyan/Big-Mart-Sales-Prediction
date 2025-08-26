@@ -4,39 +4,26 @@ import joblib
 from pathlib import Path
 import matplotlib.pyplot as plt
 
-# -------------------- PAGE CONFIG --------------------
 st.set_page_config(page_title="Big Mart Sales Prediction", page_icon="🛒", layout="wide")
 
-# -------------------- STYLE --------------------
 st.markdown("""
 <style>
-/* خلفية */
 .stApp { background: linear-gradient(135deg,#ff7f7f 0%, #ffe5e5 100%); }
-
-/* العنوان */
 h1 { text-align:center; color:white; font-weight:800; font-size:44px; margin-top:4px; }
-
-/* عناوين الحقول */
 label, .stNumberInput label, .stSelectbox label { color:white !important; }
-
-/* الأزرار */
 .stButton>button {
   background:#2563eb !important; color:white !important;
   border:0; border-radius:10px; height:2.6rem; padding:0 14px; font-weight:600;
 }
-
-/* كبسولة النتيجة */
 .pred-pill{
   display:inline-block; padding:8px 14px; border-radius:999px;
-  background:#ffffffcc; /* أبيض شبه شفاف */
-  color:#111827; font-weight:700; border:1px solid #e5e7eb;
+  background:#ffffffcc; color:#111827; font-weight:700; border:1px solid #e5e7eb;
 }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("<h1>Big Mart Sales Prediction</h1>", unsafe_allow_html=True)
 
-# -------------------- LOAD SCALER + MODEL --------------------
 BASE = Path(__file__).resolve().parent
 scaler_path = BASE / "models" / "sc.sav"
 model_path  = BASE / "models" / "rf.sav"
@@ -47,7 +34,6 @@ if not model_path.exists():  st.error(f"Model not found: {model_path}"); st.stop
 sc = joblib.load(scaler_path)
 model = joblib.load(model_path)
 
-# -------------------- ENCODING MAPS --------------------
 fat_map = {"High Fat":0, "Low Fat":1, "Regular":2}
 type_map = {
     "Baking Goods":0,"Breads":1,"Breakfast":2,"Canned":3,"Dairy":4,"Frozen Foods":5,
@@ -58,7 +44,6 @@ size_map = {"High":0,"Medium":1,"Small":2}
 loc_map  = {"Tier 1":0,"Tier 2":1,"Tier 3":2}
 otype_map= {"Grocery Store":0,"Supermarket Type1":1,"Supermarket Type2":2,"Supermarket Type3":3}
 
-# -------------------- LAYOUT --------------------
 col_left, col_right = st.columns([2, 2], gap="large")
 
 with col_left:
@@ -74,7 +59,6 @@ with col_left:
         outlet_type = st.selectbox("Outlet Type", list(otype_map.keys()))
         submit = st.form_submit_button("Submit")
 
-# -------------------- PREDICT --------------------
 if submit:
     X = np.array([[
         item_weight,
@@ -91,16 +75,12 @@ if submit:
     X_std = sc.transform(X)
     y_pred = float(model.predict(X_std)[0])
 
-    # كبسولة نتيجة صغيرة واضحة تحت المدخلات
     with col_left:
         st.markdown(f'<div class="pred-pill">Predicted Sales: {y_pred:.2f}</div>', unsafe_allow_html=True)
 
-    # -------------------- PLOTS (يمين) --------------------
-    # ألوان النصوص داكنة لقراءة أوضح
-    text_color = "#111827"  # Very dark gray/black
+    text_color = "#111827"
     tick_color = "#111827"
 
-    # 1) Feature Importances (صغير)
     with col_right:
         c1, c2 = st.columns(2)
         if hasattr(model, "feature_importances_"):
@@ -120,7 +100,6 @@ if submit:
             ax1.tick_params(axis='y', colors=tick_color, labelsize=8)
             c1.pyplot(fig1)
 
-        # 2) Sensitivity vs MRP (صغير)
         mrp_grid = np.linspace(max(0.0, item_mrp*0.5), item_mrp*1.5 if item_mrp>0 else 300, 28)
         X_sweep = np.repeat(X, len(mrp_grid), axis=0)
         X_sweep[:, 4] = mrp_grid
