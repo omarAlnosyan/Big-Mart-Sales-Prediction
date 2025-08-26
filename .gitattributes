@@ -1,4 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+*.sav filter=lfs diff=lfs merge=lfs -text
+*.joblib filter=lfs diff=lfs merge=lfs -text
 models/*.sav filter=lfs diff=lfs merge=lfs -text
 models/*.joblib filter=lfs diff=lfs merge=lfs -text
